@@ -1,0 +1,99 @@
+﻿@page
+@model RegistrationModel
+@using AcademicManagement; 
+@{
+    ViewData["Title"] = "Registration";
+}
+<div class="text-center">
+    <h1 class="display-4">Registration</h1>
+    <hr />
+    <form method="post">
+        <div class="row">
+            <div class="col-8">
+             <select class="form-select" name="SelectedStudentId" >
+              <option value="-1">Choose a student</option>
+            @foreach(Student Student in DataAccess.GetAllStudents())
+            {
+                if (Student.StudentId == Model.SelectedStudentId)
+                {
+                    <option value="@Student.StudentId" selected="selected">@Student.StudentName</option>  
+                }
+                else
+                {
+                    <option value="@Student.StudentId">@Student.StudentName</option>
+                }
+            }
+            </select>
+            </div>
+            <div class="col-4">
+                <input type="submit" asp-page-handler="StudentSelected" class="btn btn-primary" value="Get Registration">
+            </div>
+        </div>
+        <br/>
+       <table class="table">
+            @{
+
+                if (Model.CountRegistered == 0 && Model.HasSelectedStudent==true)
+            {
+                if (Model.notSelectedCourse == false)
+                {
+                        <div class="alert alert-primary" role="alert">
+                        The student has not registered any course. Please select course(s) to register.
+                        </div>
+                } 
+                else if(Model.notSelectedCourse == true)
+                {
+                        <div class="alert alert-primary" role="alert">
+                        You must select at least one course!
+                        </div>    
+                }
+                <thead>
+                    <tr>
+                        <th scope="col">Course Code</th>
+                        <th scope="col">Course Title</th>
+                        <th scope="col">Check to Register</th>
+                    </tr>
+                </thead>
+                foreach (Course course in DataAccess.GetAllCourses())
+                {
+                    <tr>
+                        <th scope="row">@course.CourseCode</th>
+                        <td>@course.CourseTitle</td>
+                        <td>
+                            <input type="checkbox" name="CheckedCoursesCode" value="@course.CourseCode">
+                        </td>
+                    </tr>
+                }
+                <tr>
+                <td>
+                <input type="submit" asp-page-handler="Register" class="btn btn-primary" value="Register">
+                <td>
+                </tr>
+            }
+            else if(Model.CountRegistered > 0)
+            {
+                    <div class="alert alert-primary" role="alert">
+                    The student has registered for the following course:
+                    </div>
+                    <tr>
+                        <th scope="col">Course Code</th>
+                        <th scope="col">Course Title</th>
+                    </tr>
+                    foreach (Course course in Model.RegisteredCourses)
+                    {
+                        <tr>
+                            <th scope="row">@course.CourseCode</th>
+                            <td>@course.CourseTitle</td>
+                        </tr>
+                    }
+            }
+            else if (Model.HasSelectedStudent == false && Model.CountRegistered != -1)
+            {
+                    <div class="alert alert-primary" role="alert">
+                    You must select a student!
+                    </div>
+            }
+            }
+        </table>
+    </form>
+</div>
