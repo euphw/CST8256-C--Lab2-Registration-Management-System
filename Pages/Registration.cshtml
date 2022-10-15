@@ -1,0 +1,186 @@
+﻿@page
+@model RegistrationModel
+@using AcademicManagement; 
+@{
+    ViewData["Title"] = "Registration";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Registration</h1>
+    <hr />
+    <form method="post" >
+        <div class="row">
+            <div class="col-8">
+             <select class="form-select" name="SelectedStudentId" asp-for="SelectedStudentId" onChange="selectChange()">
+              <option value="-1" >Choose a student</option>
+                    @foreach (Student Student in DataAccess.GetAllStudents())
+                    {
+                        if (Student.StudentId == Model.SelectedStudentId)
+                        {
+                                    <option id="@Student.StudentId" value="@Student.StudentId"  selected="selected">@Student.StudentName</option>  
+                        }
+                        else
+                        {
+                                    <option id="@Student.StudentId" value="@Student.StudentId" >@Student.StudentName</option>
+                        }
+                    }
+            </select>
+            </div>
+            <div class="col-4">
+                <input id="StudentSelected" type="submit" asp-page-handler="StudentSelected" class="btn btn-primary" value="Get Registration"> 
+            </div>
+        </div>
+        <br/>
+       <table class="table">
+            @{
+                if (Model.CountAcademicRecords == 0 && Model.HasSelectedStudent == true)
+                {
+                    if (Model.notSelectedCourse == false)
+                    {
+                    <div class="alert alert-primary" role="alert">
+                    The student has not registered any course. Please select course(s) to register.
+                    </div>
+                    }
+                    else if (Model.notSelectedCourse == true)
+                    {
+                        <div class="alert alert-primary" role="alert">
+                        You must select at least one course!
+                        </div>    
+                    }
+                                    <thead>
+                                        <tr class="row">
+                                            <th scope="col" class="col-3">
+                                            <a asp-page="Registration" asp-route-orderby="code" asp-route-studentId="@Model.SelectedStudentId">Course Code</a>
+                                            </th>
+                                            <th scope="col" class="col-7">
+                                            <a asp-page="Registration" asp-route-orderby="title" asp-route-studentId="@Model.SelectedStudentId">Course Title</a></th>
+                                            <th scope="col" class="col-2">Check to Register</th>
+                                        </tr>
+                                </thead>
+                    List<Course> courses = DataAccess.GetAllCourses();
+
+                    if (Model.OrderBy == "code")
+                    {
+                        courses.Sort((s1, s2) => s1.CourseCode.CompareTo(s2.CourseCode));
+                    }
+                    else if (Model.OrderBy == "title")
+                    {
+                        courses.Sort((s1, s2) => s1.CourseTitle.CompareTo(s2.CourseTitle));
+                    }
+
+                    foreach (Course course in courses)
+                    {
+                                        <tr class="row">
+                                            <th scope="row" class="col-3">@course.CourseCode</th>
+                                            <td class="col-7">@course.CourseTitle</td>
+                                            <td class="col-2">
+                                                <input type="checkbox" name="CheckedCoursesCode" value="@course.CourseCode">
+                                            </td>
+                                        </tr>
+                    }
+                                    <tr>
+                                    <td>
+                                    <input type="submit" asp-page-handler="Register" class="btn btn-primary" value="Register"> 
+                                    </td>
+                                    </tr>
+                }
+                else if (Model.CountAcademicRecords != 0)
+                {
+                            <div class="alert alert-primary" role="alert">
+                            The student has registered for the following course:
+                            </div>
+                            <tr class="row">
+                                <th scope="col" class="col-3">
+                                    <a asp-page="Registration" asp-route-orderby="code" asp-route-studentId="@Model.SelectedStudentId" asp-route-countRecords="@Model.CountAcademicRecords">Course Code</a></th>
+                                <th scope="col"class="col-7">
+                                    <a asp-page="Registration" asp-route-orderby="title" asp-route-studentId="@Model.SelectedStudentId" asp-route-countRecords="@Model.CountAcademicRecords">Course Title</a></th>
+                                <th scope="col" class="col-2">
+                                    <a asp-page="Registration" asp-route-orderby="grade" asp-route-studentId="@Model.SelectedStudentId" asp-route-countRecords="@Model.CountAcademicRecords">Course Grade</a></th>
+                            </tr>
+                    List<AcademicRecord> records = DataAccess.GetAcademicRecordsByStudentId(Model.SelectedStudentId);
+                    List<Course> courses = new List<Course>();
+
+                    if (Model.OrderBy == "code")
+                    {
+                        records.Sort((s1, s2) => s1.CourseCode.CompareTo(s2.CourseCode));
+                    }
+                    else if (Model.OrderBy == "grade")
+                    {
+                        records.Sort((s1, s2) => s1.Grade.CompareTo(s2.Grade));
+                    }
+                    else if (Model.OrderBy == "title")
+                    {
+
+                        for (int i = 0; i < records.Count; i++)
+                        {
+                            @foreach (Course course in DataAccess.GetAllCourses())
+                            {
+                                if (records[i].CourseCode == course.CourseCode)
+                                {
+                                    courses.Add(course);
+                                }
+                            }
+                        }
+                        courses.Sort((s1, s2) => s1.CourseTitle.CompareTo(s2.CourseTitle));
+                        records = new List<AcademicRecord>();
+                        for (int i = 0; i < courses.Count; i++)
+                        {
+                            @foreach (AcademicRecord record in DataAccess.GetAcademicRecordsByStudentId(Model.SelectedStudentId))
+                            {
+                                if (courses[i].CourseCode == record.CourseCode)
+                                {
+                                    records.Add(record);
+                                }
+                            }
+                        }
+                        
+                    }
+
+                    for (int i = 0; i < records.Count; i++)
+                    {
+                                <tr class="row">
+                                    <th scope="row" class="col-3">@records[i].CourseCode</th>
+                            @if (courses.Count != 0)
+                            {
+                                @foreach (Course course in courses)
+                                {
+                                    if (course.CourseCode == records[i].CourseCode)
+                                    {
+                                        <td class="col-7">@course.CourseTitle</td>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                @foreach (Course course in DataAccess.GetAllCourses())
+                                {
+                                    if (course.CourseCode==records[i].CourseCode)
+                                    {
+                                        <td class="col-7">@course.CourseTitle</td>
+                                    }
+                                }
+                            }
+                                <td class="col-2">
+                                @if (@records[i].Grade == -100)
+                                {
+                                  <input value="" class="form-control" type="text" name="Grade" style="width:3rem; margin:auto" />
+                                }
+                                else
+                                {
+                                        <input value="@records[i].Grade" class="form-control" type="text" name="Grade" style="width:3rem; margin:auto" />
+                                }
+
+                                            </td>
+                                        </tr>
+                    }
+                                        <tr class="row">
+                                            <td  class="col-4">
+												<input type="submit" asp-page-handler="SubmitGrades" class="btn btn-primary" value="Submit Grades"> 
+                                            </td>
+                                        </tr>
+                }
+            }
+        </table>
+    </form>
+
+</div>

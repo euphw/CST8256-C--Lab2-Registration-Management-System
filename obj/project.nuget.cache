@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "W9WU/eUlF4NBtDN/4HedAHAfbssMJex6dwKCvttXIlRcILeDFNkvkAv1DxH5nDfQffs6nZSNJOhBGB0Kdx0c3Q==",
+  "success": true,
+  "projectFilePath": "N:\\C#-22F\\week3\\Lab2\\Lab2.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\wang0873\\.nuget\\packages\\academicmanagement\\2.0.0\\academicmanagement.2.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
